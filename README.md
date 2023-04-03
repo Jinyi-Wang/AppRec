@@ -3,19 +3,19 @@
 The code aims to recommend mobile applications. Not complete. 
 
 
-##crawler.py
+## crawler.py
 Crawl data of user, app, reviews and posts.
 
-##extractTopic.py
+## extractTopic.py
 Extract nouns, verbs and adjs from natural texts.
 
-##combineSimilarWords.py
+## combineSimilarWords.py
 Use corpus to combine similar words.
 
-##recMultiMetagraph.py
+## recMultiMetagraph.py
 Input: node vecters, dataset.
 Output: recommendations for each user.
 
-##evalResult.py
+## evalResult.py
 Evalute the recommendation results.
 
