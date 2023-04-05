@@ -19,23 +19,23 @@ appid = ""
 userid = ""
 line = fileReview.readline()
 while line:
-    # 如果该行是appid，保存到appid里
+    # appid
     if(line[0:2] == "#*"):
         appid = line[2:].strip()
-    # 如果该行是userid，保存到userid里
+    # userid
     if (line[0:2] == "#@"):
         userid = line[2:].strip()
-    # 如果该行是用户发表的内容，那么进行topic提取--
+    # content of reviews/posts
     if(line[0:2] == "#!"):
-        # 输出一个计数
+        # count
         if(cnt%100==0):
-            print(str(cnt))        #count how many post have processed
+            print(str(cnt))        #count how many reviews/posts have processed
         cnt = cnt + 1
 
         review = line[2:]
         doc = nlp(review) # run annotation over a sentence
         for sentence in doc.sentences:
-            #  topic词选择VERB NOUN ADJ
+            #  chose VERB NOUN ADJ as topic words
             for word in sentence.words:
                 if (word.upos == "VERB" or word.upos == "NOUN" or word.upos == "ADJ"):
                     fileReviewWrite.write("a_"+appid+'\t'+"u_"+userid+'\t'+str(word.text)+'\n')
