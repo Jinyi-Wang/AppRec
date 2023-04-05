@@ -10,7 +10,7 @@ def eval(tru,pre): #input: truth set and prediction set
 
     # use set to calculate P R F1
     if len(spre)!=0:
-        intersection = [i for i in tru if i in spre] #求交集
+        intersection = [i for i in tru if i in spre] # intersection
         inter = set(intersection)
 
         recall = len(inter) / len(stru)
@@ -45,28 +45,26 @@ def eval(tru,pre): #input: truth set and prediction set
     return precision,recall,f1,ndcg
 
 
-def hit(gt_items, pred_items):
-    count = 0
-    for item in pred_items:
-        if item in gt_items:
-            count += 1
-    return count
-
-# 对于推荐列表中的每一项i，如果在gt里面，就计入1/i。把推荐列表全部看一遍，得到总数作为mrr值。
-def mrr(gt_items, pred_items):
-    count = 0.0
-    for index,item in enumerate(pred_items):
-        if item in gt_items:
-            count += 1/(index+1)
-    return count
+# def hit(gt_items, pred_items):
+#     count = 0
+#     for item in pred_items:
+#         if item in gt_items:
+#             count += 1
+#     return count
+#
+# def mrr(gt_items, pred_items):
+#     count = 0.0
+#     for index,item in enumerate(pred_items):
+#         if item in gt_items:
+#             count += 1/(index+1)
+#     return count
 
 
 if __name__ == "__main__":
 
+    # act means user actually used here
     filePath = '../testData/sim-'
-
     fileact = open("../testData/tap-uat0.txt", 'r', encoding='utf-8')
-
     filerec = open("../testData/upapu-rec.txt", 'r', encoding='utf-8')
     fileeval = open("../testData/upapu-eval.txt", 'w', encoding='utf-8')
 
@@ -75,13 +73,13 @@ if __name__ == "__main__":
     # top K
     K = [5, 10, 20, 30, 50]
 
-    # userList里的user出现顺序和ua0一致(actList和recList出现的顺序是一致的)
+    # same users
     userList = []
     recList = [[] * 0 for row in range(clearNo)]
     actList = [[] * 0 for row in range(clearNo)]
 
     cnt = 0
-    # 读取文件uat0 rec，放到两个矩阵里面。
+    # read uat0 rec。
     line = filerec.readline()
     while line:
         temp = line.split("\n")
@@ -96,7 +94,6 @@ if __name__ == "__main__":
         if (cnt % 10000 == 0):
             print(cnt)
         line = filerec.readline()
-
     print("recList and appList over!")
 
     cnt = 0
@@ -110,13 +107,12 @@ if __name__ == "__main__":
             print("User in act not in rec, delete!" + userName)
             line = fileact.readline()
             continue
-        # simList是三维数组，temp存入数组['a_220021', '0.9362813730238934']……
+        # temp's eg. ['a_220021', '0.9362813730238934']……
         actList[userIndex].append(temp[1])
         cnt = cnt + 1
         if (cnt % 10000 == 0):
             print(cnt)
         line = fileact.Freadline()
-
     print("actList over!")
 
     fileeval.write("userNo" + str(len(userList)))
@@ -127,8 +123,8 @@ if __name__ == "__main__":
         sumr = 0.0
         sumf = 0.0
         sumn = 0.0
-        sumhits = 0.0
-        sumMrr = 0.0
+        # sumhits = 0.0
+        # sumMrr = 0.0
         lentru = 0
         cnt = 0
         for i in range(0, clearNo):
@@ -140,12 +136,10 @@ if __name__ == "__main__":
             tru = actList[i]
             pre = recList[i][0:k]
 
-            # 计算hitRate的函数
-            hits = hit(tru, pre)
-            lentru = lentru + len(tru)
-
-            # 计算MRR
-            mrr0 = mrr(tru, pre)
+            # hits = hit(tru, pre)
+            # lentru = lentru + len(tru)
+            #
+            # mrr0 = mrr(tru, pre)
 
             # if use set, NDCG will not calculate correctly, so use list
             p, r, f, n = eval(tru, pre)
@@ -153,19 +147,22 @@ if __name__ == "__main__":
             sumr = sumr + r
             sumf = sumf + f
             sumn = sumn + n
-            sumhits = sumhits + hits
-            sumMrr = sumMrr +mrr0
+            # sumhits = sumhits + hits
+            # sumMrr = sumMrr +mrr0
             count = count + 1
 
-        # hitRate
-        hitRate = sumhits/lentru
+        # # hitRate
+        # hitRate = sumhits/lentru
 
         print(k)
-        print(sump, sumr, sumf, sumn, hitRate, sumhits, lentru, sumMrr)
+        # print(sump, sumr, sumf, sumn, hitRate, sumhits, lentru, sumMrr)
+        # print(count)
+        # fileeval.write(str(sump) + "\t" + str(sumr) + "\t" + str(sumf) + "\t" + str(sumn) + '\t'
+        #                + str(hitRate) + '\t'+ str(sumhits) + '\t'+ str(lentru) + '\t'+ str(sumMrr)
+        #                + '\n')
+        print(sump, sumr, sumf, sumn, lentru)
         print(count)
-        fileeval.write(str(sump) + "\t" + str(sumr) + "\t" + str(sumf) + "\t" + str(sumn) + '\t'
-                       + str(hitRate) + '\t'+ str(sumhits) + '\t'+ str(lentru) + '\t'+ str(sumMrr)
-                       + '\n')
+        fileeval.write(str(sump) + "\t" + str(sumr) + "\t" + str(sumf) + "\t" + str(sumn) + '\t' + str(lentru) + '\n')
         fileeval.write('count = ' + str(count) + '\n')
 
     filerec.close()
