@@ -15,11 +15,12 @@ a7 = 1
 
 # uauValue,uatuValue,uafuValue,upapuValue,uraruValue
 
+# Using different weights to calculate the scores
 def calRec(uatuV, uafuV, upapuV, uraruV, upuV, uruV):
     res = uatuV * a2 + uafuV * a3 + upapuV * a4 + uraruV * a5 + upuV * a6 + uruV * a7
     return res
 
-# file Read(u a sim)，将路径得到的用户应用关系存入数组inputList
+# file Read(u a sim)， put into inputList
 def readFile(fileRead, inputList, userList):
     cnt = 0
     line = fileRead.readline()
@@ -30,7 +31,7 @@ def readFile(fileRead, inputList, userList):
         userName = temp[0]
         userIndex = userList.index(userName) if userName in userList else -1
         if (userIndex == -1):
-            # 这里有些用户是新的。查一查发现这些用户在ua当中都没有几个app，以至于去测试集后都不存在了。
+            # new users. Not in test set(80/20). The user use less than five apps
             line = fileRead.readline()
             continue
 
@@ -43,7 +44,6 @@ def readFile(fileRead, inputList, userList):
         if (cnt % 10000 == 0):
             print(' line: '+str(cnt))
         line = fileRead.readline()
-    print("List over!")
 
 
 if __name__ == "__main__":
@@ -53,9 +53,9 @@ if __name__ == "__main__":
 
     filerec = open(filePath +str(a1) +str(a2) +str(a3) +str(a4) +str(a5) +str(a6) +str(a7) +".txt", 'w', encoding='utf-8')
 
-    # read  user used app: fileuse
+    # read  user used app lists: fileuse
     fileapp = open(fileAppPath, 'r', encoding='utf-8')
-    # read sims
+    # read vectors obtained by each walking
     fileuatu = open(filePath + "uatu.txt", 'r', encoding='utf-8')
     fileuafu = open(filePath + "uafu.txt", 'r', encoding='utf-8')
     fileuraru = open(filePath + "uraru.txt", 'r', encoding='utf-8')
@@ -63,7 +63,8 @@ if __name__ == "__main__":
     fileupu = open(filePath + "upu.txt", 'r', encoding='utf-8')
     fileuru = open(filePath + "uru.txt", 'r', encoding='utf-8')
 
-    # userList user-ua0 出现顺序一致
+    # userList and test file, have same users
+    # read users into userList
     userList = []
     line = fileapp.readline()
     while line:
@@ -80,6 +81,7 @@ if __name__ == "__main__":
     print("userlist get")
     clearNo = len(userList)
 
+    # store
     appList = [[] * 0 for row in range(clearNo)]
     uauList = [[] * 0 for row in range(clearNo)]
     uatuList = [[] * 0 for row in range(clearNo)]
@@ -89,7 +91,7 @@ if __name__ == "__main__":
     upuList = [[] * 0 for row in range(clearNo)]
     uruList = [[] * 0 for row in range(clearNo)]
 
-    # read file, user-app relationship
+    # read files of vectors and user-app relationship, and store them
     readFile(fileuatu,uatuList,userList)
     readFile(fileuafu,uafuList,userList)
     readFile(fileuraru,uraruList,userList)
@@ -121,7 +123,7 @@ if __name__ == "__main__":
 
     simList = [[] * 0 for row in range(clearNo)]
 
-    # 综合多个结果进行推荐，推荐结果放入simList
+    # put recommend results into simList
     for i in range(0,len(userList)):
         uauDict = {}
         uatuDict = {}
@@ -133,8 +135,8 @@ if __name__ == "__main__":
         sumDict = {}
         aList = []
 
-        # 对于每一个用户，获取在这几种条件下的相似度信息：uauList[i] = [ ['a','sim'], ['a','sim'], ... ]
-        # 并且将相似度信息保存到各自的字典当中，然后保存这些出现的app的名称
+        # uauList[i] = [ ['a','sim'], ['a','sim'], ... ]
+        # put similarities into dicts, remember app names
         for j in range(0, len(uatuList[i])):
             aList.append(uatuList[i][j][0])
             uatuDict[uatuList[i][j][0]] = float(uatuList[i][j][1])
@@ -155,7 +157,7 @@ if __name__ == "__main__":
             uruDict[uruList[i][j][0]] = float(uruList[i][j][1])
         aList = list(set(aList))
 
-        # 进行推荐的算法：获取各自的值，然后进行计算，将计算结果保存到字典sumDict当中。
+        # rec with values
         for k in range(0,len(aList)):
             uatuValue = uatuDict.get(aList[k]) if aList[k] in uatuDict else 0
             uafuValue = uafuDict.get(aList[k]) if aList[k] in uafuDict else 0
@@ -167,11 +169,12 @@ if __name__ == "__main__":
             if sumValue != 0:
                 sumDict[aList[k]] = sumValue
 
-        # 对字典进行排序，结果的应用按顺序保存到recList中
+        # sort dict and put into recList
         sumDict = sorted(sumDict.items(), key=lambda item: item[1],reverse=True)
         for k in range(0,len(sumDict)):
             simList[i].append(sumDict[k][0])
 
+    # pop used apps, rec new apps to users
     cnt = 0
     for i in range(0,clearNo):
         if simList[i] == []:
@@ -183,10 +186,9 @@ if __name__ == "__main__":
                 print("used app! "+appName+" "+str(cnt))
                 cnt = cnt+1
                 simList[i].pop(appIndex)
-
     print("pop used app over! ")
 
-    # 分别输出结果文件：150，这些应用按照相似度顺序排列
+    # output rec results
     topk = 150
     for i in range(0, clearNo):
         if simList[i] == []:
