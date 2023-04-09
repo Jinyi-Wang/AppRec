@@ -1,7 +1,9 @@
 # AppRec
 
 Some of the codes in my research.   
-My research aims to recommend mobile applications for users. 
+My research aims to recommend mobile applications for users.   
+The paper about my research entitled "Application Recommendation based on Metagraphs: Combining Behavioral and Published Information" has been accepted by the IEEE Computers, Software, and Applications Conference (COMPSAC 2023) as a full paper.   
+If you find this code useful in your research, please consider citing my paper.
 
 
 ## crawler.py
